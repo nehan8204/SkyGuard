@@ -1,0 +1,105 @@
+===== CORRECT BUILD (SUT=correct) =====
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python
+rootdir: /home/claude/lab6b
+collecting ... collected 8 items
+
+test_automation.py::test_waypoint[W1-typical-valid] PASSED               [ 12%]
+test_automation.py::test_waypoint[W2-lat-below-min] PASSED               [ 25%]
+test_automation.py::test_waypoint[W3-alt-upper-bound-120] PASSED         [ 37%]
+test_automation.py::test_waypoint[W4-alt-just-over-120.1] PASSED         [ 50%]
+test_automation.py::test_failsafe[F1-battery-critical-14.9] PASSED       [ 62%]
+test_automation.py::test_failsafe[F2-battery-boundary-15] PASSED         [ 75%]
+test_automation.py::test_failsafe[F3-gps-lost-link-ok] PASSED            [ 87%]
+test_automation.py::test_failsafe[F4-all-healthy] PASSED                 [100%]
+
+============================== 8 passed in 0.01s ===============================
+
+===== BROKEN BUILD (SUT=broken) - expected to FAIL =====
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python
+rootdir: /home/claude/lab6b
+collecting ... collected 8 items
+
+test_automation.py::test_waypoint[W1-typical-valid] PASSED               [ 12%]
+test_automation.py::test_waypoint[W2-lat-below-min] FAILED               [ 25%]
+test_automation.py::test_waypoint[W3-alt-upper-bound-120] FAILED         [ 37%]
+test_automation.py::test_waypoint[W4-alt-just-over-120.1] PASSED         [ 50%]
+test_automation.py::test_failsafe[F1-battery-critical-14.9] PASSED       [ 62%]
+test_automation.py::test_failsafe[F2-battery-boundary-15] FAILED         [ 75%]
+test_automation.py::test_failsafe[F3-gps-lost-link-ok] FAILED            [ 87%]
+test_automation.py::test_failsafe[F4-all-healthy] PASSED                 [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_waypoint[W2-lat-below-min] ________________________
+
+case_id = 'W2-lat-below-min', args = (-90.5, 73.0, 50), expected = 'INVALID_LAT'
+
+    @pytest.mark.parametrize("case_id,args,expected", WAYPOINT_CASES,
+                             ids=[c[0] for c in WAYPOINT_CASES])
+    def test_waypoint(case_id, args, expected):
+        actual = sut.validate_waypoint(*args)
+>       assert actual == expected, f"{case_id}: {args} -> {actual!r}, expected {expected!r}"
+E       AssertionError: W2-lat-below-min: (-90.5, 73.0, 50) -> 'VALID', expected 'INVALID_LAT'
+E       assert 'VALID' == 'INVALID_LAT'
+E         
+E         - INVALID_LAT
+E         + VALID
+
+test_automation.py:20: AssertionError
+____________________ test_waypoint[W3-alt-upper-bound-120] _____________________
+
+case_id = 'W3-alt-upper-bound-120', args = (33.0, 73.0, 120), expected = 'VALID'
+
+    @pytest.mark.parametrize("case_id,args,expected", WAYPOINT_CASES,
+                             ids=[c[0] for c in WAYPOINT_CASES])
+    def test_waypoint(case_id, args, expected):
+        actual = sut.validate_waypoint(*args)
+>       assert actual == expected, f"{case_id}: {args} -> {actual!r}, expected {expected!r}"
+E       AssertionError: W3-alt-upper-bound-120: (33.0, 73.0, 120) -> 'INVALID_ALT', expected 'VALID'
+E       assert 'INVALID_ALT' == 'VALID'
+E         
+E         - VALID
+E         + INVALID_ALT
+
+test_automation.py:20: AssertionError
+____________________ test_failsafe[F2-battery-boundary-15] _____________________
+
+case_id = 'F2-battery-boundary-15', args = (15, True, True)
+expected = 'RETURN_TO_HOME'
+
+    @pytest.mark.parametrize("case_id,args,expected", FAILSAFE_CASES,
+                             ids=[c[0] for c in FAILSAFE_CASES])
+    def test_failsafe(case_id, args, expected):
+        actual = sut.failsafe_action(*args)
+>       assert actual == expected, f"{case_id}: {args} -> {actual!r}, expected {expected!r}"
+E       AssertionError: F2-battery-boundary-15: (15, True, True) -> 'LAND_NOW', expected 'RETURN_TO_HOME'
+E       assert 'LAND_NOW' == 'RETURN_TO_HOME'
+E         
+E         - RETURN_TO_HOME
+E         + LAND_NOW
+
+test_automation.py:35: AssertionError
+______________________ test_failsafe[F3-gps-lost-link-ok] ______________________
+
+case_id = 'F3-gps-lost-link-ok', args = (60, False, True)
+expected = 'HOLD_ALTITUDE_MANUAL'
+
+    @pytest.mark.parametrize("case_id,args,expected", FAILSAFE_CASES,
+                             ids=[c[0] for c in FAILSAFE_CASES])
+    def test_failsafe(case_id, args, expected):
+        actual = sut.failsafe_action(*args)
+>       assert actual == expected, f"{case_id}: {args} -> {actual!r}, expected {expected!r}"
+E       AssertionError: F3-gps-lost-link-ok: (60, False, True) -> 'CONTINUE', expected 'HOLD_ALTITUDE_MANUAL'
+E       assert 'CONTINUE' == 'HOLD_ALTITUDE_MANUAL'
+E         
+E         - HOLD_ALTITUDE_MANUAL
+E         + CONTINUE
+
+test_automation.py:35: AssertionError
+=========================== short test summary info ============================
+FAILED test_automation.py::test_waypoint[W2-lat-below-min] - AssertionError: ...
+FAILED test_automation.py::test_waypoint[W3-alt-upper-bound-120] - AssertionE...
+FAILED test_automation.py::test_failsafe[F2-battery-boundary-15] - AssertionE...
+FAILED test_automation.py::test_failsafe[F3-gps-lost-link-ok] - AssertionErro...
+========================= 4 failed, 4 passed in 0.03s ==========================
